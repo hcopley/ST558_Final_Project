@@ -1,33 +1,29 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+library(shinydashboard)
 
-library(shiny)
-
-# Define UI for application that draws a histogram
-fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
+dashboardPage(
+    dashboardHeader(),
+    dashboardSidebar(
+        
+        sidebarMenu(
+            menuItem("About", tabName = "about", icon = icon("circle-info")),
+            menuItem("Data Exploration", tabName = "data_exploration", icon = icon("compass")),
+            menuItem("Modeling", tabName = "model", icon = icon("brain"),
+                     startExpanded = FALSE,
+                     menuSubItem("Modeling Info",tabName = "model_info"),
+                     menuSubItem("Model Fitting",tabName = "model_fit"),
+                     menuSubItem("Prediction",tabName = "model_predict")
+                     
+                     )
         )
-    )
+    ),
+    dashboardBody( dashboardBody(
+        tabItems(
+            tabItem(tabName = "about", h2("About")),
+            tabItem(tabName = "data_exploration", h2("Data Exploration")),
+            tabItem(tabName = "model", h2("Modeling")),
+            tabItem(tabName = "model_info", h2("Modeling")),
+            tabItem(tabName = "model_fit", h2("Modeling")),
+            tabItem(tabName = "model_prediction", h2("Modeling"))
+            )
+        ))
 )
