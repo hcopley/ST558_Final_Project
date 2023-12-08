@@ -76,35 +76,46 @@ server <- function(input, output, session) {
         newData <- getData()
         
         
-        if(input$x == 'none') {
+        b <- ggplot(newData, aes(y = !!sym(input$y)))
+        
+        if(input$x != 'none') {
             
-            b <- ggplot(newData, aes(y = !!sym(input$y))) 
+            if(input$color == 'none') {
+            
+            b <- b + geom_boxplot(aes(x = !!sym(input$x)))
+            
+            } else {
+                
+                b <- b + geom_boxplot(aes(x = !!sym(input$x), fill = !!sym(input$color)))
+            }
+        
         } else {
             
-            b <- ggplot(newData, aes(x = !!sym(input$x), y = !!sym(input$y))) 
+            if(input$color == 'none') {
+                
+                b <- b + geom_boxplot()
+                
+            } else {
+                
+                b <- b + geom_boxplot(aes(x = !!sym(input$color), fill = !!sym(input$color)))
+            }
             
         }
         
-        #add color variable if included
-        if(input$color == 'none') {
+        if(input$facet != 'none' & input$x == 'none' & input$color == 'none') {
             
-            b <- b + geom_boxplot()
+            b <- ggplot(newData, aes(y = !!sym(input$y))) + 
+                geom_boxplot(aes(x = !!sym(input$facet))) + 
+                facet_wrap(input$facet, labeller = label_both) 
+                
             
-        } else if (input$color != 'none' & input$x == 'none'){
-            
-            b <- b + geom_boxplot(aes(x = !!sym(input$color), fill = !!sym(input$color)))
-            
-        } else {
-            
-            b <- b + geom_boxplot(aes(fill = !!sym(input$color)))
-        }
-        
-        #add facet variable if included
-        if(input$facet != 'none') {
+        } else if (input$facet != 'none') {
             
             b <- b + facet_wrap(input$facet, labeller = label_both)
             
         }
+        
+   
         b %>% ggplotly() %>% layout(boxmode = "group")
         
     })
@@ -140,11 +151,13 @@ server <- function(input, output, session) {
         
     })
     
-    output$plot <- reactive({switch(input$plot_type,
+    output$plot <- reactive({
         
-        'scatter' = scatter(),
-        'box' = boxplots(),
-        'density' = density()
+        switch(input$plot_type,
+        
+            'scatter' = scatter(),
+            'box' = boxplots(),
+            'density' = density()
     )
     
     })
