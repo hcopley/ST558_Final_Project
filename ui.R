@@ -2,6 +2,7 @@ library(tidyverse)
 library(caret)
 library(bslib)
 library(shinythemes)
+library(plotly)
 
 fluidPage(
    #shinythemes::themeSelector(),
@@ -9,14 +10,56 @@ fluidPage(
     theme = shinytheme("superhero"),
     "Modeling Heart Failure",
         tabPanel("About", 
-             #tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/7/70/Fluent_Emoji_Color_1fac0.svg", height = "200px")
              tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/3/32/Noto_Emoji_v2.034_1fac0.svg", height = "200px")
         ),
         tabPanel("Data Exploration",
+                 sidebarPanel("Data Exploration Selections",
+                              
+                              radioButtons(inputId = "plot_type",
+                                           label = "Plot Type",
+                                           choices = c('scatter', 'box', 'density')
+                                  
+                              ),
+                              
+                              conditionalPanel(
+                                  condition = "input.plot_type != 'density'",
+                              selectizeInput(
+                                  inputId = "y",
+                                  label = "Y Axis Variable",
+                                  choices = num_vars
+                              )),
+                              
+                              selectizeInput(
+                                  inputId = "x",
+                                  label = "X Axis Variable",
+                                  choices = num_vars
+                              ),
+                              
+                              
+                              selectizeInput(
+                                  inputId = "color",
+                                  label = "Color By:",
+                                  choices = c("none", colnames(dat))
+                              ),
+                              
+                              selectizeInput(
+                                  inputId = "facet",
+                                  label = "Facet By:",
+                                  choices = c("none", cat_vars)
+                              ),
+                              
+                              ),
+                 mainPanel("Data Exploration Plots", 
+                           
+                           plotlyOutput("plot")
+                           
+                           )
+                              
+                 
                  ),
         tabPanel("Modeling",
                  
-            sidebarPanel("Selections",
+            sidebarPanel("Model Fitting Selections",
                      
                      sliderInput(
                          inputId = "split",
