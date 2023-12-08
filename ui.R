@@ -1,19 +1,22 @@
-library(shinydashboard)
 library(tidyverse)
 library(caret)
 library(bslib)
+library(shinythemes)
 
-dashboardPage(
-    skin = "purple",
-    dashboardHeader(),
-    dashboardSidebar(
-        sidebarMenu(
-            menuItem("About", tabName = "about", icon = icon("circle-info")),
-            menuItem("Data Exploration", tabName = "data_exploration", icon = icon("compass")),
-            menuItem("Modeling", tabName = "model_info", icon = icon("brain"),
-                     startExpanded = FALSE,
-                     menuSubItem("Modeling Info",tabName = "model_info"),
-                     menuSubItem("Model Fitting",tabName = "model_fit"),
+fluidPage(
+   #shinythemes::themeSelector(),
+    navbarPage(
+    theme = shinytheme("superhero"),
+    "Modeling Heart Failure",
+        tabPanel("About", 
+             #tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/7/70/Fluent_Emoji_Color_1fac0.svg", height = "200px")
+             tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/3/32/Noto_Emoji_v2.034_1fac0.svg", height = "200px")
+        ),
+        tabPanel("Data Exploration",
+                 ),
+        tabPanel("Modeling",
+                 
+            sidebarPanel("Selections",
                      
                      sliderInput(
                          inputId = "split",
@@ -45,33 +48,18 @@ dashboardPage(
                                 value = c(1, 4)
                     ),
                     
-                    actionButton("fit", "Fit Models"),
+                    actionButton("fit", "Fit Models")
                         
-                     menuSubItem("Prediction",tabName = "model_predict")
                      
-                     )
-        )
-    ),
-    dashboardBody( dashboardBody(
-        
-        
-        tabItems(
-            tabItem(tabName = "about", h2("About"),
-                    
-                    #tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/7/70/Fluent_Emoji_Color_1fac0.svg", height = "200px")
-                    tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/3/32/Noto_Emoji_v2.034_1fac0.svg", height = "200px")
-                    
-                    ),
-            tabItem(tabName = "data_exploration", h2("Data Exploration")),
-            tabItem(tabName = "model_info", h2("Model Info")),
-            tabItem(tabName = "model_fit", h2("Model Fitting"),
-                    
-                    textOutput("split_cols"),
-                    textOutput("train_rf_cols")
-                    
-                    ),
-            tabItem(tabName = "model_predict", h2("Model Prediction"))
-            )
-        ))
-)
+                     ),
+    mainPanel(
+            tabsetPanel(
+                tabPanel("Model Info",),
+                tabPanel("Model Fitting",),
+                tabPanel("Model Prediction",))
+              
+                   
+   )
+     
+)))
 
