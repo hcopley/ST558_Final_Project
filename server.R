@@ -90,10 +90,13 @@ server <- function(input, output, session) {
             
             b <- b + geom_boxplot()
             
+        } else if (input$color != 'none' & input$x == 'none'){
+            
+            b <- b + geom_boxplot(aes(x = !!sym(input$color), fill = !!sym(input$color)))
+            
         } else {
             
             b <- b + geom_boxplot(aes(fill = !!sym(input$color)))
-            
         }
         
         #add facet variable if included
@@ -146,7 +149,6 @@ server <- function(input, output, session) {
     
     })
 }
-
 
 
 
