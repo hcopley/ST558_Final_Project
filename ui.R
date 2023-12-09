@@ -114,9 +114,9 @@ fluidPage(
                                 value = c(1, 4)
                     ),
                     
-                    actionButton("fit", "Fit Models"),
+                    actionButton("fit", "Fit Models", class = "btn-danger"),
                     
-                    actionButton("predict", "Predict"),
+                    actionButton("predict", "Predict", class = "btn-danger"),
                     
                         
                      
