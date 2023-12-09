@@ -96,14 +96,14 @@ fluidPage(
                     selectizeInput(
                             inputId = "var_logit",
                             label = "Predictor Variables for Logistic Regression",
-                            choices = colnames(dat),
+                            choices = colnames(dat)[!colnames(dat) == 'DEATH_EVENT'],
                             multiple = TRUE
                         ),
                     
                     selectizeInput(
                         inputId = "var_rf",
                         label = "Predictor Variables for Random Forest",
-                        choices = colnames(dat),
+                        choices = colnames(dat)[!colnames(dat) == 'DEATH_EVENT'],
                         multiple = TRUE
                     ),
                     
@@ -121,7 +121,13 @@ fluidPage(
     mainPanel(
             tabsetPanel(
                 tabPanel("Model Info",),
-                tabPanel("Model Fitting",),
+                tabPanel("Model Fitting",
+                         
+                         #dataTableOutput('train_dat')
+                         verbatimTextOutput('train_dat')
+                         #textOutput("log_res")
+                         
+                         ),
                 tabPanel("Model Prediction",))
               
                    

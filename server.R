@@ -15,7 +15,7 @@ num_vars <- dat %>%
 
 server <- function(input, output, session) { 
     
-    
+    #get data for exploration----
     getData <- reactive({
         
         newData <- dat
@@ -35,7 +35,8 @@ server <- function(input, output, session) {
         
     })
     
-    
+
+    #update filter selectors----
     observe({
         
         if(input$filter_var %in% cat_vars) {
@@ -58,6 +59,7 @@ server <- function(input, output, session) {
         
     })
     
+    #update plot vars selectors----
     observe({
         
         switch(input$plot_type,
@@ -80,7 +82,8 @@ server <- function(input, output, session) {
                         }
                 )
         })
-        
+    
+    #plots-----    
     
     bar <-   renderPlotly({
         
@@ -120,7 +123,6 @@ server <- function(input, output, session) {
         p
         
     })
-    
     
     scatter <-   renderPlotly({
         
@@ -205,7 +207,6 @@ server <- function(input, output, session) {
         
     })
     
-    
     density <-   renderPlotly({
         #get filtered data
         newData <- getData()
@@ -248,10 +249,120 @@ server <- function(input, output, session) {
     )
     
     })
+    
+    
+
+    
+    #get data splits----
+    getPartition <- reactive({
+        
+        set.seed(42)
+        partition <- createDataPartition(dat$DEATH_EVENT, p = input$split/100, list = FALSE) 
+        
+        #train_set <- dat[partition,] 
+            
+        partition
+        #test_set <- dat[-partition,]
+        
+        #list(train_set, test_set)
+    })
+    
+    
+    getTrain <- reactive({
+        
+        dat[getPartition(),]
+    
+        })
+    
+    getTest <- reactive({
+        
+        dat[-getPartition(),]
+    
+        })
+    
+
+    trainLR <- eventReactive(input$fit, {
+        
+        
+        # Create a Progress object
+        progress <- shiny::Progress$new()
+        # Make sure it closes when we exit this reactive, even if there's an error
+        on.exit(progress$close())
+        
+        progress$set(message = "Fitting Logistic Regression Model", value = 0)
+        
+        train_set <- getTrain() %>%
+            select_at(c('DEATH_EVENT', input$var_logit))
+        
+        set.seed(42)
+        log_reg <- train(DEATH_EVENT ~ ., 
+                            data = train_set, 
+                            method = 'glm', 
+                         family = 'binomial') 
+        
+        log_reg
+        
+    })
+    
+    trainRF <- eventReactive(input$fit, {
+        
+        # Create a Progress object
+        progress <- shiny::Progress$new()
+        # Make sure it closes when we exit this reactive, even if there's an error
+        on.exit(progress$close())
+        
+        progress$set(message = "Fitting Random Forest Model", value = 0)
+        
+        train_set <- getTrain() %>%
+            select_at(c('DEATH_EVENT', input$var_rf))
+        
+        set.seed(42)
+        random_forest <- train(DEATH_EVENT ~ .,
+                               data = train_set,
+                               method = "ranger",
+                               num.trees = 100,
+                               importance = 'impurity')
+        
+        random_forest
+        
+    })
+
+    output$train_dat <- renderPrint({
+        
+        #trainLR()
+        summary(trainLR())
+        summary(trainRF())
+        
+        
+    })
+    
+      #output$train_dat <- renderDataTable({
+      #    
+      #    #trainLR()
+      #    
+      #    data.frame(summary(trainLR())$coefficients) %>%
+      #        rownames_to_column('Variable')
+      #    
+      #    
+      #})
 }
 
 
 
+#logistic_fit <- eventReactive(input$fit { 
+#    
+#    formula <- as.formula(paste0('DEATH_EVENT ~ ', paste0(input$var_logit, collapse = '+'))
+#                          
+#                          set.seed(42)
+#                          log_reg_1 <- train(formula = fomula, 
+#                                             data = train_preprocessed, 
+#                                             method = 'glm', family = 'binomial',
+#                                             metric="logLoss",
+#                                             trControl = train_control)                     
+#                          
+#                          
+#                          })
+#
 #test <- dat %>%
 #    select_if(is.factor) %>%
 #    mutate(dummy = 1) %>%
