@@ -298,6 +298,12 @@ server <- function(input, output, session) {
         predict(preProc(), splitTest())
         
     })
+    
+    #when the fit button is clicked select the Model fitting tab for viewing
+    observeEvent(input$fit, {
+        updateTabsetPanel(session, "tabset", selected = "Model Fitting")
+    }
+    )
 
     trainLR <- eventReactive(input$fit, {
         
@@ -359,15 +365,13 @@ server <- function(input, output, session) {
         summary(trainRF())
     })
     
-      #output$train_dat <- renderDataTable({
-      #    
-      #    #trainLR()
-      #    
-      #    data.frame(summary(trainLR())$coefficients) %>%
-      #        rownames_to_column('Variable')
-      #    
-      #    
-      #})
+    
+    #when the Predict button is clicked select the Model Prediction tab for viewing
+    observeEvent(input$predict, {
+        updateTabsetPanel(session, "tabset", selected = "Model Prediction")
+    }
+    )
+      
 }
 
 

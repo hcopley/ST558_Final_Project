@@ -114,12 +114,15 @@ fluidPage(
                                 value = c(1, 4)
                     ),
                     
-                    actionButton("fit", "Fit Models")
+                    actionButton("fit", "Fit Models"),
+                    
+                    actionButton("predict", "Predict"),
+                    
                         
                      
                      ),
     mainPanel(
-            tabsetPanel(
+            tabsetPanel(id = "tabset",
                 tabPanel("Model Info",),
                 tabPanel("Model Fitting",
                         
