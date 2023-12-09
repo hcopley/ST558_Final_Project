@@ -48,30 +48,39 @@ server <- function(input, output, session) {
         
     
     bar <-   renderPlotly({
+        
+        #get user selections and exclude "none"
+        vec <- c(input$x, input$color, input$facet) %>%
+            .[!.=='none']
+        
         #get filtered data
-        newData <- getData()
+        newData <- getData() %>%
+            select_at(vec) %>%
+            mutate(count = 1) %>%
+            group_by_at(vec) %>%
+            summarise(count = sum(count))
         
         #create initial bar plot with x & y
-        s <- ggplot(newData, aes(x = !!sym(input$x), y = !!sym(input$y))) 
+        p <- ggplot(newData, aes(x = !!sym(input$x), y = count)) 
         
         
         #add color variable if included
         if(input$color != 'none') {
             
-            s <- s + geom_bar(aes(col = !!sym(input$color)))
+            p <- p + geom_bar(stat = 'identity', aes(fill = !!sym(input$color)))
             
         } else {
             
-            s <- s + geom_bar()
+            p <- p + geom_bar(stat = 'identity')
         }
         
         #add facet variable if included
         if(input$facet != 'none') {
             
-            s <- s + facet_wrap(input$facet, labeller = label_both)
+            p <- p + facet_wrap(input$facet, labeller = label_both)
             
         }
-        s
+        p
         
     })
     
@@ -196,6 +205,8 @@ server <- function(input, output, session) {
     
     })
 }
+
+
 
 #test <- dat %>%
 #    select_if(is.factor) %>%
