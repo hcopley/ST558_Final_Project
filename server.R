@@ -27,6 +27,10 @@ server <- function(input, output, session) {
         
         switch(input$plot_type,
                
+               "bar" = { updateSelectizeInput(inputId = "x", choices = c(cat_vars))
+                   updateSelectizeInput(inputId = "color", choices = c("none", cat_vars)) 
+               },
+               
                "box" = { updateSelectizeInput(inputId = "x", choices = c("none", cat_vars))
                         updateSelectizeInput(inputId = "color", choices = c("none", cat_vars)) 
                         },
@@ -42,6 +46,35 @@ server <- function(input, output, session) {
                 )
         })
         
+    
+    bar <-   renderPlotly({
+        #get filtered data
+        newData <- getData()
+        
+        #create initial bar plot with x & y
+        s <- ggplot(newData, aes(x = !!sym(input$x), y = !!sym(input$y))) 
+        
+        
+        #add color variable if included
+        if(input$color != 'none') {
+            
+            s <- s + geom_bar(aes(col = !!sym(input$color)))
+            
+        } else {
+            
+            s <- s + geom_bar()
+        }
+        
+        #add facet variable if included
+        if(input$facet != 'none') {
+            
+            s <- s + facet_wrap(input$facet, labeller = label_both)
+            
+        }
+        s
+        
+    })
+    
     
     scatter <-   renderPlotly({
         #get filtered data
@@ -157,11 +190,26 @@ server <- function(input, output, session) {
         
             'scatter' = scatter(),
             'box' = boxplots(),
-            'density' = density()
+            'density' = density(),
+            'bar' = bar()
     )
     
     })
 }
+
+#test <- dat %>%
+#    select_if(is.factor) %>%
+#    mutate(dummy = 1) %>%
+#    group_by(anaemia, DEATH_EVENT, smoking, sex) %>%
+#    summarise(count = sum(dummy))
+#
+#
+#
+#g <- ggplot(test, aes(x = anaemia, y = count, fill = DEATH_EVENT)) +
+#    geom_bar(stat = 'identity') + 
+#    facet_wrap(~smoking)
+#
+#ggplotly(g)
 
 
 

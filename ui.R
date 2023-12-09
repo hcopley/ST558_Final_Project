@@ -17,12 +17,12 @@ fluidPage(
                               
                               radioButtons(inputId = "plot_type",
                                            label = "Plot Type",
-                                           choices = c('scatter', 'box', 'density')
+                                           choices = c('bar', 'scatter', 'box', 'density')
                                   
                               ),
                               
                               conditionalPanel(
-                                  condition = "input.plot_type != 'density'",
+                                  condition = "input.plot_type != 'density' & input.plot_type !=  'bar'",
                               selectizeInput(
                                   inputId = "y",
                                   label = "Y Axis Variable",
