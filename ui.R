@@ -122,11 +122,12 @@ fluidPage(
             tabsetPanel(
                 tabPanel("Model Info",),
                 tabPanel("Model Fitting",
-                         
-                         #dataTableOutput('train_dat')
-                         verbatimTextOutput('train_dat')
-                         #textOutput("log_res")
-                         
+                        
+                         verbatimTextOutput('LR'),
+
+                        
+                        verbatimTextOutput('RF')
+                             
                          ),
                 tabPanel("Model Prediction",))
               

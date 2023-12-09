@@ -268,18 +268,36 @@ server <- function(input, output, session) {
     })
     
     
-    getTrain <- reactive({
+    splitTrain <- reactive({
         
-        dat[getPartition(),]
+        training <- dat[getPartition(),]
+        
+        })
+    
+    
+    splitTest <- reactive({
+        
+        testing <- dat[-getPartition(),]
     
         })
+    
+    preProc <- reactive({
+        
+        preProcess(splitTrain(), method = c("center", "scale"))
+        
+    })
+    
+    getTrain <- reactive({
+        
+        predict(preProc(), splitTrain())
+        
+    })
     
     getTest <- reactive({
         
-        dat[-getPartition(),]
-    
-        })
-    
+        predict(preProc(), splitTest())
+        
+    })
 
     trainLR <- eventReactive(input$fit, {
         
@@ -327,13 +345,18 @@ server <- function(input, output, session) {
         
     })
 
-    output$train_dat <- renderPrint({
+    output$LR <- renderPrint({
         
         #trainLR()
         summary(trainLR())
+        
+        
+        
+    })
+    
+    output$RF <- renderPrint({
+        
         summary(trainRF())
-        
-        
     })
     
       #output$train_dat <- renderDataTable({
