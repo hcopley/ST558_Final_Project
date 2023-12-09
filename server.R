@@ -17,11 +17,46 @@ server <- function(input, output, session) {
     
     
     getData <- reactive({
+        
         newData <- dat
+        
+        if(input$filter_var %in% cat_vars) {
+        
+            newData <- newData %>%
+                filter(!!sym(input$filter_var) == input$filter_criteria)
+        } else if  (input$filter_var %in% num_vars) {
+            
+          newData <- newData %>%
+                filter(between(!!sym(input$filter_var), input$filter_slider[1], input$filter_slider[2] ))
+            
+        }
+        
+        newData
+        
     })
     
     
-    
+    observe({
+        
+        if(input$filter_var %in% cat_vars) {
+            
+            choices <- dat %>% 
+                pull(!!sym(input$filter_var)) %>%
+                unique()
+            
+            updateSelectizeInput(inputId = "filter_criteria", choices = choices)
+            
+        } else if (input$filter_var %in% num_vars) {
+            
+            range <- dat %>%
+                select(!!sym(input$filter_var)) %>%
+                summarise(min = min(!!sym(input$filter_var)), max = max(!!sym(input$filter_var)))
+            
+            updateSliderInput(inputId = "filter_slider", min = range$min, max = range$max, value = c(range$min, range$max))
+        }
+        
+        
+    })
     
     observe({
         
@@ -48,6 +83,8 @@ server <- function(input, output, session) {
         
     
     bar <-   renderPlotly({
+        
+        req(input$x != 'none')
         
         #get user selections and exclude "none"
         vec <- c(input$x, input$color, input$facet) %>%
@@ -86,8 +123,14 @@ server <- function(input, output, session) {
     
     
     scatter <-   renderPlotly({
+        
+        
+        req(input$x != 'none')
+        
         #get filtered data
         newData <- getData()
+        
+        
         
         #create initial scatter plot with x & y
         s <- ggplot(newData, aes(x = !!sym(input$x), y = !!sym(input$y))) 
@@ -167,6 +210,7 @@ server <- function(input, output, session) {
         #get filtered data
         newData <- getData()
         
+        req(input$x != 'none')
             
             d <- ggplot(newData, aes(!!sym(input$x))) 
        

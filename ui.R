@@ -15,6 +15,29 @@ fluidPage(
         tabPanel("Data Exploration",
                  sidebarPanel("Data Exploration Selections",
                               
+                              selectizeInput(
+                                  inputId = "filter_var",
+                                  label = "Filter Variable",
+                                  choices = c('none', colnames(dat)),
+                                  selected = 'none'
+                              ),
+                              
+                              conditionalPanel(condition = paste0("[",paste0("'",cat_vars,"'", collapse = ', '),"].includes(input.filter_var)"),
+                                  selectizeInput(
+                                      inputId = "filter_criteria",
+                                      label = "Filter",
+                                      choices = c('Yes', 'No')
+                                  ) 
+                              ),
+                              
+                              conditionalPanel(condition = paste0("[",paste0("'",num_vars,"'", collapse = ', '),"].includes(input.filter_var)"),
+                                               sliderInput(
+                                                   inputId = "filter_slider",
+                                                   label = "Filter",
+                                                   min = 0, max = 100, value = c(40,60)
+                                               ) 
+                              ),
+                              
                               radioButtons(inputId = "plot_type",
                                            label = "Plot Type",
                                            choices = c('bar', 'scatter', 'box', 'density')
