@@ -294,8 +294,8 @@ fluidPage(
                                                step = 1
                                            )),
                                        
-                                       actionButton("predict_logit", "Predict Logistic Regression", class = "btn-danger")    
-                                   
+                                       actionButton("predict_logit", "Predict Logistic Regression", class = "btn-danger"),    
+                                       tableOutput('show_inputs')
                                    ),
                          column(3, h4("Random Forest"),
                                 
@@ -421,9 +421,11 @@ fluidPage(
                                 
                                 actionButton("predict_rf", "Predict Random Forest", class = "btn-danger") 
                                 
+                                
                                 ),
                 column(3, h4("Results"),
-                       #verbatimTextOutput()
+                       textOutput('predictionLR'),
+                       textOutput('predictionRF')
                        
                        )
                 )

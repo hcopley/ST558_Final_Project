@@ -390,12 +390,6 @@ server <- function(input, output, session) {
             rownames_to_column('Variable')
     })
     
-    #testLR <- eventReactive(input$fit, {
-    #    
-    #    test_pred <- predict(trainLR(), newdata = getTest())
-    #    
-    #})
-    
     output$confMatRF <- renderPrint({
         
         test_pred <- predict(trainRF(), newdata = getTest())
@@ -415,153 +409,55 @@ server <- function(input, output, session) {
     })
     
 
+    userValuesLR <- eventReactive(input$predict_logit, {
+        
+            tibble('age' = input$age_val_lr,
+                   'anaemia' = input$anaemia_val_lr,
+                   'creatinine_phosphokinase' = input$creatinine_phosphokinase_val_lr,
+                   'diabetes' = input$diabetes_val_lr,
+                   'ejection_fraction' = input$ejection_fraction_val_lr,
+                   'high_blood_pressure' = input$high_blood_pressure_val_lr,
+                   'platelets' = input$platelets_val_lr,
+                   'serum_creatinine' = input$serum_creatinine_val_lr,
+                   'serum_sodium' = input$serum_sodium_val_lr,
+                   'sex' = input$sex_val_lr,
+                   'smoking' = input$smoking_val_lr,
+                   'time' = input$time_val_lr)
+    })
     
-    #when the Predict button is clicked select the Model Prediction tab for viewing
-    observeEvent(input$predict, {
-        updateTabsetPanel(session, "tabset", selected = "Model Prediction")
-    }
-    )
+    userValuesRF <- eventReactive(input$predict_rf, {
+        
+        tibble('age' = input$age_val_rf,
+               'anaemia' = input$anaemia_val_rf,
+               'creatinine_phosphokinase' = input$creatinine_phosphokinase_val_rf,
+               'diabetes' = input$diabetes_val_rf,
+               'ejection_fraction' = input$ejection_fraction_val_rf,
+               'high_blood_pressure' = input$high_blood_pressure_val_rf,
+               'platelets' = input$platelets_val_rf,
+               'serum_creatinine' = input$serum_creatinine_val_rf,
+               'serum_sodium' = input$serum_sodium_val_rf,
+               'sex' = input$sex_val_rf,
+               'smoking' = input$smoking_val_rf,
+               'time' = input$time_val_rf)
+    })
     
+    output$predictionLR <- renderText({
+        
+        test_pred <- predict(trainLR(), newdata = userValuesLR()) %>%
+            levels(dat$DEATH_EVENT)[.]
+        
+    })
+    
+    output$predictionRF <- renderText({
+        
+        test_pred <- predict(trainRF(), newdata = userValuesRF()) %>%
+            levels(dat$DEATH_EVENT)[.]
+        
+    })
+    
+    
+
     
     
       
 }
-
-#partition <- createDataPartition(dat$DEATH_EVENT, p = 80/100, list = FALSE) 
-#
-#training <- dat[partition,]
-#testing <- dat[-partition,]
-#
-#preproc <- preProcess(training, method = c("center", "scale"))
-#
-#
-#    
-#    predict(preproc, training)
-#    
-#})
-
-#getTest <- reactive({
-#    
-#    predict(preProc(), splitTest())
-#
-#log_reg <- train(DEATH_EVENT ~ ., 
-#                 data = training, 
-#                 method = 'glm', 
-#                 family = 'binomial',
-#                 trControl = fitControl) 
-#
-#test_pred <- predict(log_reg, newdata = testing)
-#
-#print(confusionMatrix(test_pred, testing$DEATH_EVENT, positive = 'Yes'))
-
-#test2 <- 
-
-#log_reg <- train(DEATH_EVENT ~ ., 
-#                 data = dat, 
-#                 method = 'glm', 
-#                 family = 'binomial',
-#                 trControl = fitControl) 
-#
-#test <- summary(log_reg)$coefficients %>% data.frame() %>% rownames_to_column('Variable')
-
-#fitControl <- trainControl(
-#    method = "repeatedcv",
-#    number = 5,
-#    repeats = 3)
-#
-##set.seed(42)
-#random_forest <- train(DEATH_EVENT ~ .,
-#                       data = dat,
-#                       method = "rf",
-#                       trControl = fitControl,
-#                       tuneGrid = expand.grid(mtry = 1:3))
-#
-#print(random_forest)
-#
-#random_forest
-
-#logistic_fit <- eventReactive(input$fit { 
-#    
-#    formula <- as.formula(paste0('DEATH_EVENT ~ ', paste0(input$var_logit, collapse = '+'))
-#                          
-#                          set.seed(42)
-#                          log_reg_1 <- train(formula = fomula, 
-#                                             data = train_preprocessed, 
-#                                             method = 'glm', family = 'binomial',
-#                                             metric="logLoss",
-#                                             trControl = train_control)                     
-#                          
-#                          
-#                          })
-#
-#test <- dat %>%
-#    select_if(is.factor) %>%
-#    mutate(dummy = 1) %>%
-#    group_by(anaemia, DEATH_EVENT, smoking, sex) %>%
-#    summarise(count = sum(dummy))
-#
-#
-#
-#g <- ggplot(test, aes(x = anaemia, y = count, fill = DEATH_EVENT)) +
-#    geom_bar(stat = 'identity') + 
-#    facet_wrap(~smoking)
-#
-#ggplotly(g)
-
-
-
-#partition_data <- function(.data, model) {
-#    
-#    set.seed(42)
-#    partition <- createDataPartition(dat$DEATH_EVENT, p = input$split/100, list = FALSE) 
-#    
-#    train_set <- dat[partition,] 
-#    
-#    test_set <- dat[-partition,]
-#    
-#    variables <- switch(model, 
-#                        'rf' = input$var_rf,
-#                        'logit' = input$var_logit
-#    )
-#    
-#    list(train_set, test_set)
-#}
-#
-#fit_dat <- observeEvent(input$fit, {
-#    set.seed(42)
-#    partition <- createDataPartition(dat$DEATH_EVENT, p = input$split/100, list = FALSE) 
-#    
-#    train_set <- dat[partition,] 
-#    
-#    test_set <- dat[-partition,]
-#    
-#    train_rf <- train_set %>%
-#        select(input$var_rf)
-#    
-#    train_logit <- train_set %>%
-#        select(input$var_logit)
-#    
-#    
-#    
-#})
-#
-#
-##split data into train/test
-#output$split_cols <- renderText({
-#    
-#    get_dat()
-#    
-#    paste0("There are ", nrow(train_set)," observations in the training set and ", nrow(test_set), " observations in the test set.")
-#    
-#})
-#
-#
-#
-#output$train_rf_cols <- renderText({
-#    
-#    get_dat()
-#    
-#    train_set %>%
-#        colnames()
-#    
-#})
