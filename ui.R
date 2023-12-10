@@ -5,6 +5,9 @@ library(shinythemes)
 library(plotly)
 
 fluidPage(
+    
+    
+    
    #shinythemes::themeSelector(),
     navbarPage(
     theme = shinytheme("superhero"),
@@ -13,7 +16,7 @@ fluidPage(
              tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/3/32/Noto_Emoji_v2.034_1fac0.svg", height = "200px")
         ),
         tabPanel("Data Exploration",
-                 sidebarPanel("Data Exploration Selections",
+                 sidebarPanel(width = 2, "Data Exploration Selections",
                               
                               selectizeInput(
                                   inputId = "filter_var",
@@ -82,7 +85,7 @@ fluidPage(
                  ),
         tabPanel("Modeling",
                  
-            sidebarPanel("Model Fitting Selections",
+            sidebarPanel(width = 2, "Model Fitting Selections",
                      
                      sliderInput(
                          inputId = "split",
@@ -107,18 +110,32 @@ fluidPage(
                         choices = colnames(dat)[!colnames(dat) == 'DEATH_EVENT'],
                         multiple = TRUE
                     ),
+                    
+                    numericInput(
+                      inputId = "number",
+                      label = "Cross Validation: Number of Folds",
+                      value = 5,
+                      min = 1,
+                      max = 10
+                    ),
+                    
+                    numericInput(
+                        inputId = "repeats",
+                        label = "Cross Validation: Number of Repeats",
+                        value = 3,
+                        min = 1,
+                        max = 10
+                    ),
                 
                     sliderInput(inputId = "mtry_range", 
-                            label ="Range for Tuning mtry in Random Forest", 
+                            label ="Range for Tuning The Number of Variables (mtry) in Random Forest", 
                             min = 1, 
                             max = 12, 
-                            value = c(1, 4)
+                            value = c(1, 5)
                     ),
                  
                     
-                    actionButton("fit", "Fit Models", class = "btn-danger"),
-                    
-                    actionButton("test", "Test", class = "btn-danger")
+                    actionButton("fit", "Fit Models", class = "btn-danger")
                     
            
            ), 
@@ -130,10 +147,28 @@ fluidPage(
                 tabPanel("Model Info",),
                 tabPanel("Model Fitting",
                         
-                         verbatimTextOutput('LR'),
-
+                    fluidRow(
+                         
+                        column(4, h4("Logistic Regression"),
+                        tags$b("Fit Statistics"),
+                        tableOutput('LR'),
+                        tags$b("Coefficients"),
+                        tableOutput('coeff_LR'),
+                        tags$b("Test Statistics"),
+                        tags$style(type='text/css', '#confMatLR {background-color: rgba(0,0,0,0); color: white;}'),
+                        verbatimTextOutput('confMatLR')
                         
-                        verbatimTextOutput('RF')
+                         ),
+                        column(4, h4("Random Forest"),
+                        tags$b("Fit Statistics"), 
+                        tableOutput('RF'),
+                        tags$b("Variable Importance"),
+                        tableOutput('var_imp_RF'),
+                        tags$b("Test Statistics"),
+                        tags$style(type='text/css', '#confMatRF {background-color: rgba(0,0,0,0); color: white;}'),
+                        verbatimTextOutput('confMatRF')
+                         )
+                    )
                              
                          ),
                 tabPanel("Model Prediction",

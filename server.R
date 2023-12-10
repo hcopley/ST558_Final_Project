@@ -259,12 +259,8 @@ server <- function(input, output, session) {
         set.seed(42)
         partition <- createDataPartition(dat$DEATH_EVENT, p = input$split/100, list = FALSE) 
         
-        #train_set <- dat[partition,] 
-            
         partition
-        #test_set <- dat[-partition,]
-        
-        #list(train_set, test_set)
+    
     })
     
     
@@ -304,6 +300,17 @@ server <- function(input, output, session) {
         updateTabsetPanel(session, "tabset", selected = "Model Fitting")
     }
     )
+    
+    getCV <- reactive({
+        
+        fitControl <- trainControl(
+            method = "repeatedcv",
+            number = input$number,
+            repeats = input$repeats)
+        
+        fitControl
+        
+    })
 
     trainLR <- eventReactive(input$fit, {
         
@@ -322,7 +329,8 @@ server <- function(input, output, session) {
         log_reg <- train(DEATH_EVENT ~ ., 
                             data = train_set, 
                             method = 'glm', 
-                         family = 'binomial') 
+                         family = 'binomial',
+                         trControl = getCV()) 
         
         log_reg
         
@@ -343,28 +351,70 @@ server <- function(input, output, session) {
         set.seed(42)
         random_forest <- train(DEATH_EVENT ~ .,
                                data = train_set,
-                               method = "ranger",
-                               num.trees = 100,
-                               importance = 'impurity')
+                               method = "rf",
+                               trControl = getCV(),
+                               tuneGrid = expand.grid(mtry = input$mtry_range[1]:input$mtry_range[2]))
         
         random_forest
         
     })
 
-    output$LR <- renderPrint({
+    output$LR <- renderTable({
         
-        #trainLR()
-        summary(trainLR())
+        trainLR()$results
         
         
         
     })
     
-    output$RF <- renderPrint({
+    output$RF <- renderTable({
         
-        summary(trainRF())
+        trainRF()$results
+        
     })
     
+   
+    output$coeff_LR <- renderTable({
+        
+        summary(log_reg)$coefficients %>% 
+            data.frame() %>% 
+            rownames_to_column('Variable')
+        
+    })
+    
+    output$var_imp_RF <- renderTable({
+        
+        varImp(trainRF())$importance %>%
+            arrange(-Overall) %>%
+            rename('Overall Importance' = Overall) %>%
+            rownames_to_column('Variable')
+    })
+    
+    #testLR <- eventReactive(input$fit, {
+    #    
+    #    test_pred <- predict(trainLR(), newdata = getTest())
+    #    
+    #})
+    
+    output$confMatRF <- renderPrint({
+        
+        test_pred <- predict(trainRF(), newdata = getTest())
+        conf_mat <- confusionMatrix(test_pred, getTest()$DEATH_EVENT, positive = 'Yes')
+        
+        conf_mat
+        
+    })
+
+    output$confMatLR <- renderPrint({
+        
+        test_pred <- predict(trainLR(), newdata = getTest())
+        conf_mat <- confusionMatrix(test_pred, getTest()$DEATH_EVENT, positive = 'Yes')
+     
+        conf_mat
+        
+    })
+    
+
     
     #when the Predict button is clicked select the Model Prediction tab for viewing
     observeEvent(input$predict, {
@@ -373,15 +423,62 @@ server <- function(input, output, session) {
     )
     
     
-    predictLR <- eventReactive(input$predict, {
-        
-        test_pred <- predict(trainLR(), newdata = getTest(), type="prob")
-        
-    })
+    
       
 }
 
+#partition <- createDataPartition(dat$DEATH_EVENT, p = 80/100, list = FALSE) 
+#
+#training <- dat[partition,]
+#testing <- dat[-partition,]
+#
+#preproc <- preProcess(training, method = c("center", "scale"))
+#
+#
+#    
+#    predict(preproc, training)
+#    
+#})
 
+#getTest <- reactive({
+#    
+#    predict(preProc(), splitTest())
+#
+#log_reg <- train(DEATH_EVENT ~ ., 
+#                 data = training, 
+#                 method = 'glm', 
+#                 family = 'binomial',
+#                 trControl = fitControl) 
+#
+#test_pred <- predict(log_reg, newdata = testing)
+#
+#print(confusionMatrix(test_pred, testing$DEATH_EVENT, positive = 'Yes'))
+
+#test2 <- 
+
+#log_reg <- train(DEATH_EVENT ~ ., 
+#                 data = dat, 
+#                 method = 'glm', 
+#                 family = 'binomial',
+#                 trControl = fitControl) 
+#
+#test <- summary(log_reg)$coefficients %>% data.frame() %>% rownames_to_column('Variable')
+
+#fitControl <- trainControl(
+#    method = "repeatedcv",
+#    number = 5,
+#    repeats = 3)
+#
+##set.seed(42)
+#random_forest <- train(DEATH_EVENT ~ .,
+#                       data = dat,
+#                       method = "rf",
+#                       trControl = fitControl,
+#                       tuneGrid = expand.grid(mtry = 1:3))
+#
+#print(random_forest)
+#
+#random_forest
 
 #logistic_fit <- eventReactive(input$fit { 
 #    
