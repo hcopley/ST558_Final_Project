@@ -371,6 +371,13 @@ server <- function(input, output, session) {
         updateTabsetPanel(session, "tabset", selected = "Model Prediction")
     }
     )
+    
+    
+    predictLR <- eventReactive(input$predict, {
+        
+        test_pred <- predict(trainLR(), newdata = getTest(), type="prob")
+        
+    })
       
 }
 

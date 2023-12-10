@@ -90,8 +90,9 @@ fluidPage(
                          min = 0,
                          max = 100,
                          post = " %",
-                         value = 80,
+                         value = 80
                      ),
+                     
                      
                     selectizeInput(
                             inputId = "var_logit",
@@ -99,28 +100,31 @@ fluidPage(
                             choices = colnames(dat)[!colnames(dat) == 'DEATH_EVENT'],
                             multiple = TRUE
                         ),
-                    
+            
                     selectizeInput(
                         inputId = "var_rf",
                         label = "Predictor Variables for Random Forest",
                         choices = colnames(dat)[!colnames(dat) == 'DEATH_EVENT'],
                         multiple = TRUE
                     ),
-                    
+                
                     sliderInput(inputId = "mtry_range", 
-                                label ="Range for Tuning mtry in Random Forest", 
-                                min = 1, 
-                                max = 12, 
-                                value = c(1, 4)
+                            label ="Range for Tuning mtry in Random Forest", 
+                            min = 1, 
+                            max = 12, 
+                            value = c(1, 4)
                     ),
+                 
                     
                     actionButton("fit", "Fit Models", class = "btn-danger"),
                     
-                    actionButton("predict", "Predict", class = "btn-danger"),
+                    actionButton("test", "Test", class = "btn-danger")
                     
-                        
+           
+           ), 
+                    
                      
-                     ),
+                     
     mainPanel(
             tabsetPanel(id = "tabset",
                 tabPanel("Model Info",),
@@ -132,10 +136,269 @@ fluidPage(
                         verbatimTextOutput('RF')
                              
                          ),
-                tabPanel("Model Prediction",))
+                tabPanel("Model Prediction",
+                         
+                         column(3, h4("Logistic Regression"),
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('age')",
+                                           sliderInput(
+                                               inputId = "age_val_lr",
+                                               label = "Enter a value for Age",
+                                               value = mean(dat$age),
+                                               min = min(dat$age),
+                                               max = max(dat$age),
+                                               step = 1
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('anaemia')",
+                                           selectizeInput(
+                                               inputId = "anaemia_val_lr",
+                                               label = "Enter a value for Anaemia",
+                                               choices = c("Yes", "No")
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('creatinine_phosphokinase')",
+                                           sliderInput(
+                                               inputId = "creatinine_phosphokinase_val_lr",
+                                               label = "Enter a value for Creatinine Phosphokinase",
+                                               value = mean(dat$creatinine_phosphokinase),
+                                               min = min(dat$creatinine_phosphokinase),
+                                               max = max(dat$creatinine_phosphokinase),
+                                               step = 1
+                                           )),
+                                       
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('diabetes')",
+                                           selectizeInput(
+                                               inputId = "diabetes_val_lr",
+                                               label = "Enter a value for Diabetes",
+                                               choices = c("Yes", "No")
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('ejection_fraction')",
+                                           sliderInput(
+                                               inputId = "ejection_fraction_val_lr",
+                                               label = "Enter a value for Ejection Fraction",
+                                               value = mean(dat$ejection_fraction),
+                                               min = min(dat$ejection_fraction),
+                                               max = max(dat$ejection_fraction),
+                                               step = 1
+                                           )),
+                                       
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('high_blood_pressure')",
+                                           selectizeInput(
+                                               inputId = "high_blood_pressure_val_lr",
+                                               label = "Enter a value for High Blood Pressure",
+                                               choices = c("Yes", "No")
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('platelets')",
+                                           sliderInput(
+                                               inputId = "platelets_val_lr",
+                                               label = "Enter a value for Platelets",
+                                               value = mean(dat$platelets),
+                                               min = min(dat$platelets),
+                                               max = max(dat$platelets),
+                                               step = 1
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('serum_creatinine')",
+                                           sliderInput(
+                                               inputId = "serum_creatinine_val_lr",
+                                               label = "Enter a value for Serum Creatinine",
+                                               value = mean(dat$serum_creatinine),
+                                               min = min(dat$serum_creatinine),
+                                               max = max(dat$serum_creatinine),
+                                               step = .1
+                                           )),
+                                       
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('serum_sodium')",
+                                           sliderInput(
+                                               inputId = "serum_sodium_val_lr",
+                                               label = "Enter a value for Serum Sodium",
+                                               value = mean(dat$serum_sodium),
+                                               min = min(dat$serum_sodium),
+                                               max = max(dat$serum_sodium),
+                                               step = 1
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('sex')",
+                                           selectizeInput(
+                                               inputId = "sex_val_lr",
+                                               label = "Enter a value for Sex",
+                                               choices = c("Female", "Male")
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('smoking')",
+                                           selectizeInput(
+                                               inputId = "smoking_val_lr",
+                                               label = "Enter a value for Smoking",
+                                               choices = c("Yes", "No")
+                                           )),
+                                       
+                                       conditionalPanel(
+                                           condition = "input.var_logit.includes('time')",
+                                           sliderInput(
+                                               inputId = "time_val_lr",
+                                               label = "Enter a value for Time",
+                                               value = mean(dat$time),
+                                               min = min(dat$time),
+                                               max = max(dat$time),
+                                               step = 1
+                                           )),
+                                       
+                                       actionButton("predict_logit", "Predict Logistic Regression", class = "btn-danger")    
+                                   
+                                   ),
+                         column(3, h4("Random Forest"),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('age')",
+                                    sliderInput(
+                                        inputId = "age_val_rf",
+                                        label = "Enter a value for Age",
+                                        value = mean(dat$age),
+                                        min = min(dat$age),
+                                        max = max(dat$age),
+                                        step = 1
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('anaemia')",
+                                    selectizeInput(
+                                        inputId = "anaemia_val_rf",
+                                        label = "Enter a value for Anaemia",
+                                        choices = c("Yes", "No")
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('creatinine_phosphokinase')",
+                                    sliderInput(
+                                        inputId = "creatinine_phosphokinase_val_rf",
+                                        label = "Enter a value for Creatinine Phosphokinase",
+                                        value = mean(dat$creatinine_phosphokinase),
+                                        min = min(dat$creatinine_phosphokinase),
+                                        max = max(dat$creatinine_phosphokinase),
+                                        step = 1
+                                    )),
+                                
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('diabetes')",
+                                    selectizeInput(
+                                        inputId = "diabetes_val_rf",
+                                        label = "Enter a value for Diabetes",
+                                        choices = c("Yes", "No")
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('ejection_fraction')",
+                                    sliderInput(
+                                        inputId = "ejection_fraction_val_rf",
+                                        label = "Enter a value for Ejection Fraction",
+                                        value = mean(dat$ejection_fraction),
+                                        min = min(dat$ejection_fraction),
+                                        max = max(dat$ejection_fraction),
+                                        step = 1
+                                    )),
+                                
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('high_blood_pressure')",
+                                    selectizeInput(
+                                        inputId = "high_blood_pressure_val_rf",
+                                        label = "Enter a value for High Blood Pressure",
+                                        choices = c("Yes", "No")
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('platelets')",
+                                    sliderInput(
+                                        inputId = "platelets_val_rf",
+                                        label = "Enter a value for Platelets",
+                                        value = mean(dat$platelets),
+                                        min = min(dat$platelets),
+                                        max = max(dat$platelets),
+                                        step = 1
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('serum_creatinine')",
+                                    sliderInput(
+                                        inputId = "serum_creatinine_val_rf",
+                                        label = "Enter a value for Serum Creatinine",
+                                        value = mean(dat$serum_creatinine),
+                                        min = min(dat$serum_creatinine),
+                                        max = max(dat$serum_creatinine),
+                                        step = .1
+                                    )),
+                                
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('serum_sodium')",
+                                    sliderInput(
+                                        inputId = "serum_sodium_val_rf",
+                                        label = "Enter a value for Serum Sodium",
+                                        value = mean(dat$serum_sodium),
+                                        min = min(dat$serum_sodium),
+                                        max = max(dat$serum_sodium),
+                                        step = 1
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('sex')",
+                                    selectizeInput(
+                                        inputId = "sex_val_rf",
+                                        label = "Enter a value for Sex",
+                                        choices = c("Female", "Male")
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('smoking')",
+                                    selectizeInput(
+                                        inputId = "smoking_val_rf",
+                                        label = "Enter a value for Smoking",
+                                        choices = c("Yes", "No")
+                                    )),
+                                
+                                conditionalPanel(
+                                    condition = "input.var_rf.includes('time')",
+                                    sliderInput(
+                                        inputId = "time_val_rf",
+                                        label = "Enter a value for Time",
+                                        value = mean(dat$time),
+                                        min = min(dat$time),
+                                        max = max(dat$time),
+                                        step = 1
+                                    )),
+                                
+                                actionButton("predict_rf", "Predict Random Forest", class = "btn-danger") 
+                                
+                                ),
+                column(3, h4("Results"),
+                       #verbatimTextOutput()
+                       
+                       )
+                )
+                       
+                        
+                         
+                         
+                         ))
               
                    
-   )
      
 )))
 
