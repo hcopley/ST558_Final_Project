@@ -3,17 +3,20 @@ dat <- read_csv('heart_failure_clinical_records_dataset.csv') %>%
     mutate_at(vars(anaemia, diabetes, high_blood_pressure, smoking, DEATH_EVENT), 
               ~factor(.,levels = c(0,1), labels = c('Yes', 'No'))) %>%
     mutate(sex = factor(sex, levels = c(0,1), labels = c('Female', 'Male')))
-    
+
 
 cat_vars <- dat %>%
     select_if(is.factor) %>%
     colnames()
-    
+
 num_vars <- dat %>%
     select_if(is.numeric) %>%
     colnames()
 
 server <- function(input, output, session) { 
+    
+    
+    
     
     #get data for exploration----
     getData <- reactive({
@@ -376,7 +379,7 @@ server <- function(input, output, session) {
    
     output$coeff_LR <- renderTable({
         
-        summary(log_reg)$coefficients %>% 
+        summary(trainLR())$coefficients %>% 
             data.frame() %>% 
             rownames_to_column('Variable')
         
@@ -446,12 +449,16 @@ server <- function(input, output, session) {
         test_pred <- predict(trainLR(), newdata = userValuesLR()) %>%
             levels(dat$DEATH_EVENT)[.]
         
+        paste0('Predicted Death Event = ' , test_pred)
+        
     })
     
     output$predictionRF <- renderText({
         
         test_pred <- predict(trainRF(), newdata = userValuesRF()) %>%
             levels(dat$DEATH_EVENT)[.]
+        
+        paste0('Predicted Death Event = ' , test_pred)
         
     })
     
