@@ -4,8 +4,22 @@ library(bslib)
 library(shinythemes)
 library(plotly)
 
+dat <- read_csv('heart_failure_clinical_records_dataset.csv') %>%
+    mutate_at(vars(anaemia, diabetes, high_blood_pressure, smoking, DEATH_EVENT), 
+              ~factor(.,levels = c(0,1), labels = c('Yes', 'No'))) %>%
+    mutate(sex = factor(sex, levels = c(0,1), labels = c('Female', 'Male')))
+
+
+cat_vars <- dat %>%
+    select_if(is.factor) %>%
+    colnames()
+
+num_vars <- dat %>%
+    select_if(is.numeric) %>%
+    colnames()
+
+
 fluidPage(
-    
     
     
    #shinythemes::themeSelector(),
@@ -13,10 +27,63 @@ fluidPage(
     theme = shinytheme("superhero"),
     "Modeling Heart Failure",
         tabPanel("About", 
+            column(3,
              tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/3/32/Noto_Emoji_v2.034_1fac0.svg", height = "200px")
+            ),
+             column(9,
+             tags$div(
+                
+                 tags$h2('Predictive Modeling of Heart Failure Survival'),
+                tags$p('This application is designed to facilitate the analysis and modeling of heart failure data. It offers tools for data exploration, visualization, and predictive modeling.'),
+                tags$h3('Heart Failure Data'),
+                tags$p('The data used in this app was sourced from',
+                        tags$a(href="https://archive.ics.uci.edu/", "UC Irvine Machine Learning Repository."),
+                        '  More information about this data can be found ',
+                        tags$a(href = "https://archive.ics.uci.edu/dataset/519/heart+failure+clinical+records", "here.")
+                        ),
+                tags$p('The dataset contains 299 heart failure patients, covering 13 clinical features per patient. The data, collected during follow-up periods, offers insights into various health indicators relevant to heart failure research.'),
+                
+                tags$h3('Navigation'),
+                tags$h4('Data Exploration Tab'),
+                tags$p('In the Data Exploration tab, users can engage with data through a variety of interactive tools:'),
+                tags$ul(
+                    tags$li('Filtering Options: Select and filter variables.'),
+                    tags$li('Plot Selection: Choose from bar, scatter, box, or density plots.'),
+                    tags$li('Customization: Set axes and color variables; facet by categories.'),
+                    tags$li('Dynamic Visualization: Plot updates based on selections.')
+                    ),
+                
+                tags$h4('Modeling Tab'),
+                tags$p('The Modeling tab is divided into three subtabs, each offering unique functionalities:'),
+                tags$ul(
+                    tags$li('Model Info Tab'),
+                        tags$ul(
+                            tags$li('Learn about logistic regression and random forest models.')
+                        ),
+                    tags$li('Model Fitting Tab:'),
+                        tags$ul(
+                            tags$li('Set training/test data split.'),
+                            tags$li('Select predictors for each model type.'),
+                            tags$li('Tune random forest parameters.'),
+                            tags$li('Fit models and review statistical summaries.')
+                        ),
+                    tags$li('Model Prediction Tab:'),
+                        tags$ul(
+                            tags$li('Input values for predictions in logistic regression and random forest models based on variables selected in training.'),
+                            tags$li('View prediction results.')
+                            
+                        )
+                    
+                )
+                
+                )
+             )
+             
+             
+             
         ),
         tabPanel("Data Exploration",
-                 sidebarPanel(width = 2, "Data Exploration Selections",
+                 sidebarPanel(width = 3, "Data Exploration Selections",
                               
                               selectizeInput(
                                   inputId = "filter_var",
@@ -85,7 +152,7 @@ fluidPage(
                  ),
         tabPanel("Modeling",
                  
-            sidebarPanel(width = 2, "Model Fitting Selections",
+            sidebarPanel(width = 3, "Model Fitting Selections",
                      
                      sliderInput(
                          inputId = "split",
@@ -295,7 +362,8 @@ fluidPage(
                                            )),
                                        
                                        actionButton("predict_logit", "Predict Logistic Regression", class = "btn-danger"),    
-                                       tableOutput('show_inputs')
+                                    h4("Logisitc Regression Prediction:"),
+                                    textOutput('predictionLR')
                                    ),
                          column(3, h4("Random Forest"),
                                 
@@ -419,21 +487,18 @@ fluidPage(
                                         step = 1
                                     )),
                                 
-                                actionButton("predict_rf", "Predict Random Forest", class = "btn-danger") 
+                                actionButton("predict_rf", "Predict Random Forest", class = "btn-danger"), 
+                                h4("Random Forest Prediction:"),
+                                textOutput('predictionRF')
                                 
-                                
-                                ),
-                column(3, h4("Results"),
-                       textOutput('predictionLR'),
-                       textOutput('predictionRF')
-                       
-                       )
+                                )
+                
                 )
                        
                         
                          
                          
-                         ))
+    ))
               
                    
      
