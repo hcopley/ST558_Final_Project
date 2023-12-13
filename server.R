@@ -1,3 +1,10 @@
+#*****************************************----
+#ST558 Final Project 
+#Heather Copley
+#Server File
+#*****************************************-----
+
+
 #Read in the data and set appropriate levels for the categorical variables
 dat <- read_csv('heart_failure_clinical_records_dataset.csv') %>%
     mutate_at(vars(anaemia, diabetes, high_blood_pressure, smoking, DEATH_EVENT), 

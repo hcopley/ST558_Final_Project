@@ -1,3 +1,11 @@
+#*****************************************----
+#ST558 Final Project 
+#Heather Copley
+#UI File
+#*****************************************-----
+
+
+#load packages
 library(tidyverse)
 library(shinythemes)
 library(plotly)
