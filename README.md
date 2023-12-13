@@ -12,7 +12,7 @@ The "Predictive Modeling of Heart Failure Survival" app is designed for analyzin
 
 ## To install all packages needed you can run the following code:
 
-`install.packages(c('tidyverse', 'shinythemes', 'plotly', 'caret', 'randomForest')`
+`install.packages(c('tidyverse', 'shinythemes', 'plotly', 'caret', 'randomForest'))`
 
 ## To run the app from your R session: 
 
