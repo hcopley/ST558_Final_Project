@@ -4,21 +4,23 @@ library(plotly)
 library(caret)
 library(randomForest)
 
+#Read in the data and set appropriate levels for the categorical variables
 dat <- read_csv('heart_failure_clinical_records_dataset.csv') %>%
     mutate_at(vars(anaemia, diabetes, high_blood_pressure, smoking, DEATH_EVENT), 
               ~factor(.,levels = c(0,1), labels = c('Yes', 'No'))) %>%
     mutate(sex = factor(sex, levels = c(0,1), labels = c('Female', 'Male')))
 
-
+#identify the categorical variables
 cat_vars <- dat %>%
     select_if(is.factor) %>%
     colnames()
 
+#identify the numeric variables
 num_vars <- dat %>%
     select_if(is.numeric) %>%
     colnames()
 
-
+#start the ui
 fluidPage(
     
     #do not allow columns to overlap
@@ -109,7 +111,7 @@ fluidPage(
                                   ) 
                               ),
                               
-                            #if the 
+                            #if the filter variable is numeric show a slider
                               conditionalPanel(condition = paste0("[",paste0("'",num_vars,"'", collapse = ', '),"].includes(input.filter_var)"),
                                                sliderInput(
                                                    inputId = "filter_slider",
@@ -118,12 +120,14 @@ fluidPage(
                                                ) 
                               ),
                               
+                            #allow the user to enter the plot type
                               radioButtons(inputId = "plot_type",
                                            label = "Plot Type",
                                            choices = c('bar', 'scatter', 'box', 'density')
                                   
                               ),
                               
+                            #if the plot type is a bar allow the user to select a numeric variable on the y axis
                               conditionalPanel(
                                   condition = "input.plot_type != 'density' & input.plot_type !=  'bar'",
                               selectizeInput(
@@ -132,19 +136,21 @@ fluidPage(
                                   choices = num_vars
                               )),
                               
+                            #allow the user to select a numeric variable for the x axis (this will be updated in the server)
                               selectizeInput(
                                   inputId = "x",
                                   label = "X Axis Variable",
                                   choices = num_vars
                               ),
                               
-                              
+                              #allow the user to select a variable for the color
                               selectizeInput(
                                   inputId = "color",
                                   label = "Color By:",
                                   choices = c("none", colnames(dat))
                               ),
                               
+                            #allow the user to select a variable for the facet
                               selectizeInput(
                                   inputId = "facet",
                                   label = "Facet By:",
@@ -152,6 +158,7 @@ fluidPage(
                               ),
                               
                               ),
+                 #output the plot in the main panel
                  mainPanel("Data Exploration Plots", 
                            
                            plotlyOutput("plot")
@@ -164,6 +171,7 @@ fluidPage(
                  
             sidebarPanel(width = 3, "Model Fitting Selections",
                      
+                    #allow the user to choose the train test split %
                      sliderInput(
                          inputId = "split",
                          label = "Training Data Split Percentage",
@@ -173,7 +181,7 @@ fluidPage(
                          value = 80
                      ),
                      
-                     
+                    #allow the user to choose the predictor variables for the logistic regression model
                     selectizeInput(
                             inputId = "var_logit",
                             label = "Predictor Variables for Logistic Regression",
@@ -181,6 +189,7 @@ fluidPage(
                             multiple = TRUE
                         ),
             
+                    #allow the user to choose the predictor variables for the random forest model
                     selectizeInput(
                         inputId = "var_rf",
                         label = "Predictor Variables for Random Forest",
@@ -188,6 +197,7 @@ fluidPage(
                         multiple = TRUE
                     ),
                     
+                    #allow the user to choose the number of folds
                     numericInput(
                       inputId = "number",
                       label = "Cross Validation: Number of Folds",
@@ -196,6 +206,7 @@ fluidPage(
                       max = 10
                     ),
                     
+                    #allow the user to choose the number of repeats
                     numericInput(
                         inputId = "repeats",
                         label = "Cross Validation: Number of Repeats",
@@ -204,6 +215,7 @@ fluidPage(
                         max = 10
                     ),
                 
+                    #allow the user to enter the tuning grid range for mtry
                     sliderInput(inputId = "mtry_range", 
                             label ="Range for Tuning The Number of Variables (mtry) in Random Forest", 
                             min = 1, 
@@ -211,7 +223,7 @@ fluidPage(
                             value = c(1, 5)
                     ),
                  
-                    
+                    #allow the user to fit the models when the button is pressed
                     actionButton("fit", "Fit Models", class = "btn-danger")
                     
            
@@ -223,6 +235,7 @@ fluidPage(
             tabsetPanel(id = "tabset",
                 tabPanel("Model Info",
                          
+                         #Display information about Logistic Regression
                          column(3,
                          
                          tags$h3('Logistic Regression'),
@@ -260,6 +273,8 @@ fluidPage(
                         
                          
                          ),
+                        
+                        #Display information about Random Forest
                         column(3, 
                                
                                tags$h3('Random Forest'),
@@ -311,6 +326,7 @@ fluidPage(
                         
                     fluidRow(
                          
+                        #Display the Model fit Statistics for the Logistic Regression cross validation and testing
                         column(4, h4("Logistic Regression"),
                         tags$b("Fit Statistics"),
                         tableOutput('LR'),
@@ -319,8 +335,9 @@ fluidPage(
                         tags$b("Test Statistics"),
                         tags$style(type='text/css', '#confMatLR {background-color: rgba(0,0,0,0); color: white;}'),
                         verbatimTextOutput('confMatLR')
-                        
                          ),
+                        
+                        #Display the Model fit Statistics for the Random Forest cross validation and testing
                         column(4, h4("Random Forest"),
                         tags$b("Fit Statistics"), 
                         tableOutput('RF'),
@@ -336,6 +353,9 @@ fluidPage(
                 tabPanel("Model Prediction",
                          
                          column(3, h4("Logistic Regression"),
+                                
+                                    #Logistic Regression - Allow the user to enter values for any predictor variable
+                                    #Each variable widget is shown only if it was selected in the model that was fit
                                        conditionalPanel(
                                            condition = "input.var_logit.includes('age')",
                                            sliderInput(
@@ -455,13 +475,16 @@ fluidPage(
                                                max = max(dat$time),
                                                step = 1
                                            )),
-                                       
+                                       #allow the user to predict when pressing the button
                                        actionButton("predict_logit", "Predict Logistic Regression", class = "btn-danger"),    
                                     h4("Logisitc Regression Prediction:"),
                                     textOutput('predictionLR')
                                    ),
+                         
                          column(3, h4("Random Forest"),
                                 
+                                #Random Forest - Allow the user to enter values for any predictor variable
+                                #Each variable widget is shown only if it was selected in the model that was fit
                                 conditionalPanel(
                                     condition = "input.var_rf.includes('age')",
                                     sliderInput(
@@ -581,7 +604,7 @@ fluidPage(
                                         max = max(dat$time),
                                         step = 1
                                     )),
-                                
+                                #allow the user to predict when pressing the button
                                 actionButton("predict_rf", "Predict Random Forest", class = "btn-danger"), 
                                 h4("Random Forest Prediction:"),
                                 textOutput('predictionRF')
