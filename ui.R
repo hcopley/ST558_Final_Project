@@ -1,8 +1,8 @@
 library(tidyverse)
-library(caret)
-library(bslib)
 library(shinythemes)
 library(plotly)
+library(caret)
+library(randomForest)
 
 dat <- read_csv('heart_failure_clinical_records_dataset.csv') %>%
     mutate_at(vars(anaemia, diabetes, high_blood_pressure, smoking, DEATH_EVENT), 
@@ -21,11 +21,16 @@ num_vars <- dat %>%
 
 fluidPage(
     
+    #do not allow columns to overlap
+    tags$head(tags$style(
+        "body { word-wrap: break-word; }"
+    )),
     
-   #shinythemes::themeSelector(),
     navbarPage(
     theme = shinytheme("superhero"),
     "Modeling Heart Failure",
+    
+#ABOUT PAGE **************************----
         tabPanel("About", 
             column(3,
              tags$img(src = "https://upload.wikimedia.org/wikipedia/commons/3/32/Noto_Emoji_v2.034_1fac0.svg", height = "200px")
@@ -82,9 +87,12 @@ fluidPage(
              
              
         ),
+
+#DATA EXPLORATION PAGE **************************----
         tabPanel("Data Exploration",
                  sidebarPanel(width = 3, "Data Exploration Selections",
-                              
+                    
+                            #Data exploration widgets            
                               selectizeInput(
                                   inputId = "filter_var",
                                   label = "Filter Variable",
@@ -92,6 +100,7 @@ fluidPage(
                                   selected = 'none'
                               ),
                               
+                            #if the filter variable is categorical show a selector 
                               conditionalPanel(condition = paste0("[",paste0("'",cat_vars,"'", collapse = ', '),"].includes(input.filter_var)"),
                                   selectizeInput(
                                       inputId = "filter_criteria",
@@ -100,6 +109,7 @@ fluidPage(
                                   ) 
                               ),
                               
+                            #if the 
                               conditionalPanel(condition = paste0("[",paste0("'",num_vars,"'", collapse = ', '),"].includes(input.filter_var)"),
                                                sliderInput(
                                                    inputId = "filter_slider",
@@ -148,7 +158,7 @@ fluidPage(
                            
                            )
                               
-                 
+#MODELING PAGE **************************----                 
                  ),
         tabPanel("Modeling",
                  
@@ -211,8 +221,93 @@ fluidPage(
                      
     mainPanel(
             tabsetPanel(id = "tabset",
-                tabPanel("Model Info",),
+                tabPanel("Model Info",
+                         
+                         column(3,
+                         
+                         tags$h3('Logistic Regression'),
+                         
+                         tags$p(tags$a(href='https://simple.wikipedia.org/wiki/Logistic_regression','Logistic regression'),
+                                             'is a generalized linear model appropriate to binary outcome data. 
+                                The predictor variables may be continuous or categorical. It models the probability of success of the outcome class using the logistic function'),
+                         
+                         withMathJax('$$P(success) = \\frac{e^{\\beta_0 + B_1x_1 + B_2x_2 +... + B_nx_n}}{1 + e^{\\beta_0 + B_1x_1 + B_2x_2 +... + B_nx_n}}$$'),
+                             
+                         tags$p('In logistic regression the logit function links the probability to a linear combination of the parameters:'),
+                             
+                         withMathJax('$$logit(p) = log(\\frac{p}{1-p})$$'),
+                         
+                        tags$p('It can be shown that:'),
+                             
+                         withMathJax(' $$log(\\frac{p}{1-p}) = \\beta_0 + \\beta_1x_1 + \\beta_2x_2 + ... + \\beta_nx_n + \\epsilon$$'),
+                             
+                            
+                        tags$h4('Benefits'),
+                        tags$ul(
+                            tags$li('Ease of Interpretability'),
+                            tags$li('Ease of Implementation'),
+                            tags$li('Allows for responses from non-normal distributions')
+                            
+                        ),
+                        
+                        tags$h4('Drawbacks'),
+                        tags$ul(
+                            tags$li('Assumes The predictor variables are linearly related to the log odds/logit'),
+                            tags$li('Assumes absence of Multicollinearity'),
+                            tags$li('Assumes absence of strong influential outliers')
+                            
+                        ),
+                        
+                         
+                         ),
+                        column(3, 
+                               
+                               tags$h3('Random Forest'),
+                               
+                               tags$p(tags$a(href = 'https://en.wikipedia.org/wiki/Random_forest', 'Random forest'), 'is an ensemble tree based method.' ),
+                               
+                               tags$p('Tree based methods split up the predictor space into different regions and provide predictions based on those regions (usually the mean for regression, and the most prevalent value for classification. 
+                                 They are fit using recursive binary splitting.'),
+                               
+                               tags$p('For every possible value of each predictor the Residual Sum of Squares is found such that:'),
+                                    withMathJax('$$R_1(j,s)=\\{x|x_j<s\\}$$'),
+                                    withMathJax('$$R_2(j,s)=\\{x|x_j\\geq s\\}$$'),
+                               
+                               tags$p('j and s are found such that they minimize the equation:'),
+                                    withMathJax('$$\\sum_{i:x_i\\in R_1(j,s)}(y_i - \\bar{y}_{R_1})^2 + \\sum_{i:x_i\\in R_2(j,s)}(y_i - \\bar{y}_{R_2})^2$$'),
+                    
+                  
+                                tags$p('In a Random Forest model, the "forest" is composed of a large number of individual decision trees, each contributing to the final output.'),
+
+                               
+                               tags$p('Bootstrap Sampling is used to generate multiple subsets of the training data through random selection with replacement, ensuring each subset is the same size as the original dataset.
+                                 Many Trees are then fit to these samples. Each tree is constructed with a random subset of the parameters. This random subset helps to reduce variability of the model'),
+                               
+                               tags$p('Random Forest employs an ensemble approach that combines all of the outcomes of the individual trees to make a final prediction. 
+                                      In classification this is typically a majority vote among the trees. In regression this is typically an average of all of the tree outcomes.'),
+                               
+                                  
+                               tags$h4('Benefits'),
+                               tags$ul(
+                                   tags$li('Does not assume a particular distribution or linearity'),
+                                   tags$li('Robust to outliers'),
+                                   tags$li('It is not necessary to include interaction terms as the trees will "find" them on their own'),
+                                   tags$li('Improved accuracy over linear methods'),
+                                   tags$li('Reduced variance over individual decision trees'),
+                                   tags$li('Less prone to overfitting')
+                                   
+                               ),
+                               
+                               tags$h4('Drawbacks'),
+                               tags$ul(
+                                   tags$li('The end model is more difficult to interpret (though variable importance can be extracted)'),
+                                   tags$li('Can be computationally expensive'),
+                                   tags$li('Can be biased towards more dominant classes particularly in imbalanced datasets')
+                               
+                               )
+                        )),
                 tabPanel("Model Fitting",
+                         
                         
                     fluidRow(
                          
